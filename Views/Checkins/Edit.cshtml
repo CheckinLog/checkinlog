@@ -1,0 +1,115 @@
+﻿@model CheckinLog.Models.Checkin
+
+@{
+    ViewData["Title"] = "Editar Check-in";
+
+    // Função auxiliar para validar permissão contra as chaves do banco
+    bool PodeVer(string chave) => User.HasClaim("Permission", chave);
+}
+
+<div class="main-card shadow-sm p-4 mx-auto" style="max-width: 800px;">
+    <h2 class="fw-bold text-navy mb-4 border-bottom pb-2">ATUALIZAR REGISTRO</h2>
+
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="DataCheckin" />
+        <input type="hidden" asp-for="CaminhoCNH" />
+        <input type="hidden" asp-for="CaminhoCursoDefensiva" />
+
+        <div class="row g-3">
+            @if (PodeVer("edit_campo_nome"))
+            {
+                <div class="col-md-6">
+                    <label asp-for="Nome" class="form-label fw-bold">Nome</label>
+                    <input asp-for="Nome" class="form-control" />
+                    <span asp-validation-for="Nome" class="text-danger"></span>
+                </div>
+            }
+
+            @if (PodeVer("edit_campo_matricula"))
+            {
+                <div class="col-md-6">
+                    <label asp-for="Matricula" class="form-label fw-bold">Matrícula</label>
+                    <input asp-for="Matricula" class="form-control" />
+                    <span asp-validation-for="Matricula" class="text-danger"></span>
+                </div>
+            }
+
+            @if (PodeVer("edit_campo_email"))
+            {
+                <div class="col-12">
+                    <label asp-for="Email" class="form-label fw-bold">E-mail</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            }
+
+            @if (PodeVer("edit_campo_empresa"))
+            {
+                <div class="col-md-6">
+                    <label asp-for="Empresa" class="form-label fw-bold">Empresa</label>
+                    <input asp-for="Empresa" class="form-control" />
+                    <span asp-validation-for="Empresa" class="text-danger"></span>
+                </div>
+            }
+
+            @if (PodeVer("edit_campo_funcao"))
+            {
+                <div class="col-md-6">
+                    <label asp-for="Funcao" class="form-label fw-bold">Função</label>
+                    <input asp-for="Funcao" class="form-control" />
+                    <span asp-validation-for="Funcao" class="text-danger"></span>
+                </div>
+            }
+
+            <div class="col-12 py-2">
+                <hr class="opacity-10" />
+                <h5 class="fw-bold text-muted small mb-3">SUBSTITUIÇÃO DE DOCUMENTOS (OPCIONAL)</h5>
+            </div>
+
+            @if (PodeVer("edit_anexo_cnh"))
+            {
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-navy">Alterar CNH</label>
+                    <input type="file" name="novoArquivoCNH" class="form-control" accept="image/*,.pdf" />
+                    @if (!string.IsNullOrEmpty(Model.CaminhoCNH))
+                    {
+                        <div class="form-text text-success"><i class="bi bi-file-earmark-check"></i> Existe um arquivo salvo.</div>
+                    }
+                </div>
+            }
+
+            @if (PodeVer("edit_anexo_curso"))
+            {
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-navy">Alterar Curso Defensiva</label>
+                    <input type="file" name="novoArquivoCurso" class="form-control" accept="image/*,.pdf" />
+                    @if (!string.IsNullOrEmpty(Model.CaminhoCursoDefensiva))
+                    {
+                        <div class="form-text text-success"><i class="bi bi-file-earmark-check"></i> Existe um arquivo salvo.</div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="mt-5 pt-3 d-flex gap-2">
+            @if (PodeVer("edit_btn_salvar"))
+            {
+                <button type="submit" class="btn btn-primary px-5 shadow-sm">SALVAR ALTERAÇÕES</button>
+            }
+            
+            @if (PodeVer("edit_btn_cancelar"))
+            {
+                <a asp-action="Index" class="btn btn-light border px-4">CANCELAR</a>
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

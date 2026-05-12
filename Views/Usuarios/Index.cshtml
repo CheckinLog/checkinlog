@@ -1,0 +1,198 @@
+﻿@model CheckinLog.Models.Usuario
+@using CheckinLog.Extensions
+
+@{
+    ViewData["Title"] = "Gestão de Usuários";
+}
+
+<div class="container mt-4">
+    <!-- CARD DE CADASTRO / EDIÇÃO -->
+    @* Substituído Session por User.HasPermission *@
+    @if (User.HasPermission("btn_cadastrar_usuario"))
+    {
+        <div class="card border-0 shadow-sm mb-5" style="border-radius: 15px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-4" style="color: #2d3a4b;">
+                    <i class="bi bi-person-gear me-2"></i>GERENCIAMENTO DE USUÁRIOS
+                </h4>
+                
+                <form asp-action="Save" method="post" id="userForm">
+                    <input type="hidden" asp-for="Id" id="UserId" />
+
+                    <div class="row align-items-end">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label small fw-bold text-uppercase">Nome de Usuário</label>
+                            <input asp-for="NomeUsuario" id="UserNome" class="form-control" style="height: 45px; border-radius: 10px;" required />
+                        </div>
+                        
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label small fw-bold text-uppercase">Senha</label>
+                            <input asp-for="Senha" id="UserSenha" type="password" class="form-control" style="height: 45px; border-radius: 10px;" required />
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label small fw-bold text-uppercase">Nível de Acesso</label>
+                            <select asp-for="NivelAcesso" id="UserNivel" class="form-select" style="height: 45px; border-radius: 10px;">
+                                <option value="1">Nível 1 - Motorista / Portaria</option>
+                                <option value="2">Nível 2 - Observador</option>
+                                <option value="3">Nível 3 - Aux. Administrativo</option>
+                                <option value="4">Nível 4 - Administrativo</option>
+                                <option value="5">Nível 5 - Gerência</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label class="form-label small fw-bold text-uppercase mb-0">Status</label>
+                                <div class="form-check form-switch">
+                                    <input asp-for="Ativo" class="form-check-input" type="checkbox" id="UserAtivo" checked>
+                                    <label class="form-check-label small fw-bold ms-1" for="UserAtivo">Ativo</label>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" id="btnSubmit" class="btn btn-primary flex-grow-1 fw-bold text-uppercase"
+                                        style="height: 45px; border-radius: 10px; background: linear-gradient(90deg, #2DFF73 0%, #00FFEE 100%); border: none; color: #2d3a4b; font-size: 0.72rem; white-space: nowrap;">
+                                    CADASTRAR USUÁRIO
+                                </button>
+                                
+                                <button type="button" id="btnCancel" class="btn btn-light fw-bold text-uppercase d-none"
+                                        onclick="resetForm()" style="height: 45px; border-radius: 10px; font-size: 0.72rem; color: #6c757d; border: 1px solid #dee2e6;">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- TABELA DE LISTAGEM -->
+    @if (User.HasPermission("view_tabela_usuarios"))
+    {
+        <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead style="background-color: #f8f9fa;">
+                        <tr>
+                            <th class="ps-4 py-3 text-muted small">USUÁRIO</th>
+                            <th class="py-3 text-muted small text-center">NÍVEL</th>
+                            <th class="py-3 text-muted small text-center">STATUS</th>
+                            <th class="pe-4 py-3 text-muted small text-end">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.ListaUsuarios != null)
+                        {
+                            foreach (var user in (IEnumerable<CheckinLog.Models.Usuario>)ViewBag.ListaUsuarios)
+                            {
+                                <tr class="align-middle">
+                                    <td class="ps-4 py-3 fw-bold" style="color: #2d3a4b;">@user.NomeUsuario.ToUpper()</td>
+                                    <td class="py-3 text-center">
+                                        <span class="badge rounded-pill bg-light text-dark border px-3">Nível @user.NivelAcesso</span>
+                                    </td>
+                                    <td class="py-3 text-center">
+                                        @if (user.Ativo)
+                                        {
+                                            <span class="badge bg-success-subtle text-success px-3">Ativo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger px-3">Inativo</span>
+                                        }
+                                    </td>
+                                    <td class="pe-4 py-3 text-end">
+                                        @if (User.HasPermission("btn_visualizar_usuario"))
+                                        {
+                                            <button class="btn btn-sm text-info border-0" title="Visualizar"
+                                                    onclick="visualizarUser('@user.Id', '@user.NomeUsuario', '@user.Senha', '@user.NivelAcesso', '@user.Ativo.ToString().ToLower()')">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        }
+
+                                        @if (User.HasPermission("btn_editar_usuario"))
+                                        {
+                                            <button class="btn btn-sm text-secondary border-0 ms-2" title="Editar"
+                                                    onclick="editarUser('@user.Id', '@user.NomeUsuario', '@user.Senha', '@user.NivelAcesso', '@user.Ativo.ToString().ToLower()')">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        }
+                                        
+                                        @if (User.HasPermission("btn_excluir_usuario"))
+                                        {
+                                            <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-sm text-danger border-0 ms-2"
+                                                   onclick="return confirm('ATENÇÃO: Deseja realmente excluir este usuário?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function editarUser(id, nome, senha, nivel, ativo) {
+            const inputNome = document.getElementById('UserNome');
+            const selectNivel = document.getElementById('UserNivel');
+            const btn = document.getElementById('btnSubmit');
+
+            if(!inputNome) return;
+
+            inputNome.readOnly = true;
+            inputNome.style.backgroundColor = "#f8f9fa";
+            selectNivel.style.pointerEvents = "auto";
+            selectNivel.style.backgroundColor = "white";
+
+            document.getElementById('UserId').value = id;
+            document.getElementById('UserNome').value = nome;
+            document.getElementById('UserSenha').value = senha;
+            document.getElementById('UserNivel').value = nivel;
+            document.getElementById('UserAtivo').checked = (ativo === 'true');
+
+            btn.innerText = "SALVAR ALTERAÇÃO";
+            btn.style.background = "linear-gradient(90deg, #FFD600 0%, #FFA800 100%)";
+            
+            document.getElementById('btnCancel').classList.remove('d-none');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function visualizarUser(id, nome, senha, nivel, ativo) {
+            editarUser(id, nome, senha, nivel, ativo);
+            const selectNivel = document.getElementById('UserNivel');
+            if(selectNivel){
+                selectNivel.style.pointerEvents = "none";
+                selectNivel.style.backgroundColor = "#e9ecef";
+                document.getElementById('btnSubmit').innerText = "ATUALIZAR ACESSO";
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('UserId').value = 0;
+            document.getElementById('userForm').reset();
+            const inputNome = document.getElementById('UserNome');
+            const selectNivel = document.getElementById('UserNivel');
+            if(inputNome){
+                inputNome.readOnly = false;
+                inputNome.style.backgroundColor = "white";
+            }
+            if(selectNivel){
+                selectNivel.style.pointerEvents = "auto";
+                selectNivel.style.backgroundColor = "white";
+            }
+            const btn = document.getElementById('btnSubmit');
+            if(btn){
+                btn.innerText = "CADASTRAR USUÁRIO";
+                btn.style.background = "linear-gradient(90deg, #2DFF73 0%, #00FFEE 100%)";
+            }
+            document.getElementById('btnCancel').classList.add('d-none');
+        }
+    </script>
+}

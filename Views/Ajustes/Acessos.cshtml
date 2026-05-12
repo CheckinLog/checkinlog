@@ -1,0 +1,139 @@
+﻿@model IEnumerable<CheckinLog.Models.Permissao>
+
+@{
+    ViewData["Title"] = "Gestão de Acessos";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+
+<div class="container-fluid shadow-sm p-4 bg-white rounded">
+    <h2 class="mb-4 text-primary"><i class="bi bi-shield-lock"></i> CONFIGURAÇÃO DE PERFIS</h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <label class="form-label font-weight-bold">Selecione o Perfil para configurar:</label>
+            <select id="selectPerfil" class="form-select border-primary shadow-sm">
+                <option value="">-- Selecione um Perfil --</option>
+                <option value="1">Portaria (Nível 1)</option>
+                <option value="2">Observador (Nível 2)</option>
+                <option value="3">Administrador Jr (Nível 3)</option>
+                <option value="4">Administrador Pleno (Nível 4)</option>
+                <option value="5">Gerente / TI (Nível 5)</option>
+            </select>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-md-12">
+            <div id="treeview_permissoes" class="border p-3 rounded bg-light" style="max-height: 600px; overflow-y: auto;">
+                @* A árvore será injetada aqui *@
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-end">
+        <button type="button" class="btn btn-success btn-lg shadow px-5" onclick="salvarAcessos()">
+            <i class="bi bi-check-circle"></i> SALVAR ALTERAÇÕES
+        </button>
+    </div>
+</div>
+  
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    
+    <script>
+        // 1. DADOS DA ÁRVORE
+        var dadosParaArvore = [
+        @foreach (var item in Model)
+        {
+            var pId = (item.ParentId == null || item.ParentId == 0) ? "#" : item.ParentId.ToString();
+        
+            // Usar a tag <text> ajuda a isolar o conteúdo para o editor
+            <text>
+                {
+                "id": "@item.Id",
+                "parent": "@pId",
+                "text": "@Html.Raw(item.NomeExibicao)",
+                "icon": "@(item.Tipo == "Tela" ? "bi bi-window text-primary" : "bi bi-dot text-warning")",
+                "state": { "opened": true }
+                },
+            </text>
+        }
+        ];
+
+        $(document).ready(function () {
+            // Inicialização do jsTree
+            $('#treeview_permissoes').jstree({
+                'core': {
+                    'data': dadosParaArvore,
+                    'check_callback': true,
+                    'themes': { "dots": true, "icons": true }
+                },
+                "checkbox": {
+                    "three_state": true, // Importante: mantém a lógica de pai/filho
+                    "tie_selection": false
+                },
+                "plugins": ["checkbox", "wholerow"]
+            });
+
+            // 2. CARREGAMENTO DOS ACESSOS (Ajustado o ID do seletor)
+            $('#selectPerfil').on('change', function () {
+                var perfilId = $(this).val();
+                var instance = $('#treeview_permissoes').jstree(true);
+                
+                instance.uncheck_all();
+
+                if (perfilId) {
+                    $.get('/Ajustes/GetAcessosPorPerfil', { perfilId: perfilId }, function (data) {
+                        if (data) {
+                            data.forEach(function(id) {
+                                var node = instance.get_node(id.toString());
+                                // Marca apenas se for folha para o jsTree processar o cascading corretamente
+                                if (node && instance.is_leaf(node)) {
+                                    instance.check_node(node);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // 3. SALVAMENTO (Corrigido para pegar IDs marcados e indeterminados)
+        function salvarAcessos() {
+            const perfilId = $('#selectPerfil').val(); // Corrigido ID do select
+            
+            if (!perfilId) {
+                alert("Por favor, selecione um perfil primeiro.");
+                return;
+            }
+
+            // Captura IDs marcados E os "indeterminados" (ramos pais parcialmente marcados)
+            var selectedIds = $('#treeview_permissoes').jstree(true).get_checked();
+            var undecidedIds = $('#treeview_permissoes').jstree(true).get_undetermined();
+            var fullList = selectedIds.concat(undecidedIds);
+
+            const data = {
+                perfilId: parseInt(perfilId),
+                permissoesIds: fullList.map(Number)
+            };
+
+            fetch('/Ajustes/SalvarAcessos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.mensagem) {
+                    alert(res.mensagem);
+                } else {
+                    alert("Erro: " + res.erro);
+                }
+            })
+            .catch(err => alert("Erro na requisição: " + err));
+        }
+    </script>
+}

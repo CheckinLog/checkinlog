@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Ajustes do Sistema";
+}
+
+<div class="p-2">
+    <h2 class="fw-bold text-navy mb-4"><i class="bi bi-gear me-2"></i> AJUSTES DO SISTEMA</h2>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <h5 class="fw-bold mb-3">Aparência</h5>
+            <p class="text-muted">Escolha como prefere visualizar a interface do sistema.</p>
+            
+            <div class="d-flex gap-4 mt-4">
+                <!-- Card Modo Claro -->
+                <div id="card-light" class="theme-card p-3 border rounded text-center" onclick="mudarTema('light')" style="width: 150px; cursor: pointer; transition: 0.3s;">
+                    <div class="bg-light border mb-2" style="height: 80px; border-radius: 8px;"></div>
+                    <span class="fw-bold">Modo Claro</span>
+                </div>
+
+                <!-- Card Modo Escuro -->
+                <div id="card-dark" class="theme-card p-3 border rounded text-center" onclick="mudarTema('dark')" style="width: 150px; cursor: pointer; transition: 0.3s;">
+                    <div class="bg-dark border border-secondary mb-2" style="height: 80px; border-radius: 8px;"></div>
+                    <span class="fw-bold">Modo Escuro</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function mudarTema(tema) {
+        // Altera o atributo no elemento HTML raiz
+        document.documentElement.setAttribute('data-bs-theme', tema);
+        
+        // Salva a escolha no navegador do usuário
+        localStorage.setItem('theme', tema);
+        
+        // Atualiza o destaque visual dos botões
+        atualizarDestaque(tema);
+        
+        // Opcional: Persiste no servidor via AJAX
+        fetch('/Configuracoes/SalvarTema?tema=' + tema, { method: 'POST' }).catch(() => {});
+    }
+
+    function atualizarDestaque(tema) {
+        const lightCard = document.getElementById('card-light');
+        const darkCard = document.getElementById('card-dark');
+        
+        if (tema === 'dark') {
+            darkCard.style.borderColor = 'var(--edp-cyan)';
+            darkCard.style.borderWidth = '2px';
+            lightCard.style.borderColor = '';
+            lightCard.style.borderWidth = '1px';
+        } else {
+            lightCard.style.borderColor = 'var(--edp-cyan)';
+            lightCard.style.borderWidth = '2px';
+            darkCard.style.borderColor = '';
+            darkCard.style.borderWidth = '1px';
+        }
+    }
+
+    // Inicializa o destaque ao carregar a página
+    document.addEventListener("DOMContentLoaded", function() {
+        const temaAtual = localStorage.getItem('theme') || 'light';
+        atualizarDestaque(temaAtual);
+    });
+</script>

@@ -1,0 +1,93 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+/* --- PERSONALIZAÇÃO CHECKINLOG & EDP --- */
+
+:root {
+    --edp-dark: #2d3a4b;
+    --edp-green: #3cfb3c;
+    --edp-cyan: #00e5ff;
+    --edp-gradient: linear-gradient(135deg, #3cfb3c 0%, #00e5ff 100%);
+    --app-bg: #f0f4f8;
+}
+
+/* Estilo do Card Principal (Painel de Loja) */
+.main-card {
+    background: white;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Limites suaves para os campos de entrada */
+.form-control-lg {
+    background-color: #ffffff !important;
+    border: 1.5px solid #e0e6ed !important; /* Bordas suaves que você pediu */
+    border-radius: 12px !important;
+    padding: 12px 18px !important;
+    font-size: 1rem !important;
+    transition: all 0.2s ease-in-out;
+    color: var(--edp-dark);
+}
+
+    /* Efeito ao clicar no campo (Focus) */
+    .form-control-lg:focus {
+        border-color: var(--edp-cyan) !important;
+        box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.1) !important;
+        outline: none;
+    }
+
+/* Campos de Upload (Borda tracejada para indicar anexo) */
+input[type="file"].form-control {
+    background-color: #f8fafc !important;
+    border: 2px dashed #cbd5e1 !important;
+    padding: 10px !important;
+    cursor: pointer;
+    border-radius: 12px;
+}
+
+    input[type="file"].form-control:hover {
+        border-color: var(--edp-green) !important;
+        background-color: #f0fff4 !important;
+    }
+
+/* Botão Principal com Degradê */
+.btn-primary {
+    background: var(--edp-gradient) !important;
+    border: none !important;
+    color: var(--edp-dark) !important;
+    font-weight: 700;
+    border-radius: 16px !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+    .btn-primary:hover {
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 229, 255, 0.3);
+    }
+
+/* Títulos */
+.text-navy {
+    color: var(--edp-dark);
+    letter-spacing: -1px;
+}

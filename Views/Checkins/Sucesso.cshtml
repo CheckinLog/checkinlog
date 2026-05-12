@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Check-in Realizado";
+    Layout = "_Layout"; // Mantém o menu superior se necessário
+}
+
+<div class="container border-0 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 text-center">
+            
+            <!-- Card de Sucesso -->
+            <div class="card shadow-lg border-0 p-5" style="border-radius: 24px; background: #ffffff;">
+                
+                <!-- Ícone Animado (Bootstrap Icons) -->
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill" style="font-size: 5rem; color: #2dfd82;"></i>
+                </div>
+
+                <h2 class="fw-bold text-navy mb-3" style="letter-spacing: -1px;">
+                    CHECK-IN CONCLUÍDO!
+                </h2>
+                
+                <p class="text-muted mb-4 px-3">
+                    Seu registro foi enviado com sucesso. Você já pode seguir com o seu atendimento na portaria.
+                </p>
+
+                <hr class="my-4 opacity-25">
+
+                <!-- Botão de Loop para o próximo motorista -->
+                <div class="d-grid gap-2">
+                    <a asp-action="Create"
+                           class="btn btn-primary btn-lg fw-bold d-flex align-items-center justify-content-center"
+                           style="border-radius: 15px; height: 60px; background: linear-gradient(135deg, #2dfd82 0%, #06d5d9 100%); border: none;">
+                        <i class="bi bi-plus-circle me-2"></i> NOVO CHECK-IN
+                    </a>
+                </div>
+
+                <small class="text-secondary mt-4 d-block">
+                    ISV - Gestão de Acessos
+                </small>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Ajuste para o texto Navy que você usa no sistema */
+    .text-navy {
+        color: #2d3a4b;
+    }
+
+    /* Efeito de levitação no card */
+    .card {
+        transition: transform 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+</style>

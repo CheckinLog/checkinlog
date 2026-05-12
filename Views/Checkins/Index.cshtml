@@ -1,0 +1,168 @@
+﻿@model IEnumerable<CheckinLog.Models.Checkin>
+
+@{
+    ViewData["Title"] = "Gestão de Check-ins";
+
+    // Verifica permissão via Extensions ou Claims
+    bool UsuarioTemPermissao(string chave) => User.HasClaim("Permission", chave);
+}
+
+<div class="main-card shadow-sm p-4 p-md-5 mx-auto" style="max-width: 1300px; background-color: white; border-radius: 16px;">
+    
+    <!-- Cabeçalho com Botão de Ação -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="lh-sm">
+            @* Adicionado line-height small para aproximar as linhas *@
+            <h2 class="fw-bold text-dark mb-0" style="font-size: 1.75rem; letter-spacing: -0.5px;">
+                GESTÃO DE CHECK-INS
+            </h2>
+            <p class="text-muted small mb-0" style="opacity: 0.8;">
+                Listagem administrativa de motoristas registrados.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            @if (UsuarioTemPermissao("btn_exportar"))
+            {
+                <a asp-action="ExportarExcel"
+                       asp-route-searchString="@ViewData["CurrentFilter"]"
+                       asp-route-startDate="@ViewData["StartDate"]"
+                       asp-route-endDate="@ViewData["EndDate"]"
+                       class="btn btn-light border fw-bold px-3 d-flex align-items-center"
+                       style="border-radius: 12px; color: #2d3a4b; height: 45px;">
+                    <i class="bi bi-file-earmark-excel text-success me-2"></i> EXPORTAR
+                </a>
+            }
+
+            @if (UsuarioTemPermissao("btn_incluir"))
+            {
+                <a asp-action="Create"
+                       class="btn btn-primary d-flex align-items-center text-uppercase fw-bold px-3"
+                       style="border-radius: 12px; background: linear-gradient(135deg, #2dfd82 0%, #06d5d9 100%); border: none; height: 45px;">
+                    <i class="bi bi-plus-circle me-2"></i> Incluir Check-in
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- SEÇÃO DE FILTROS -->
+    <form asp-action="Index" method="get" class="bg-light p-3 mb-4 rounded border shadow-sm">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary">Pesquisar</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Nome, matrícula ou empresa...">
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-secondary">Data Início</label>
+                <input type="date" name="startDate" value="@ViewData["StartDate"]" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-secondary">Data Fim</label>
+                <input type="date" name="endDate" value="@ViewData["EndDate"]" class="form-control">
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark w-100 fw-bold" style="background-color: #2d3a4b; border-radius: 8px;">
+                    FILTRAR
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Limpar Filtros" style="border-radius: 8px;">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Tabela com Design de Dashboard -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle border-bottom">
+            <thead class="bg-light" style="color: #2d3a4b;">
+                <tr>
+                    <th>Data / Hora</th>
+                    <th>Matrícula</th>
+                    <th>Colaborador</th>
+                    <th>Empresa / Função</th>
+                    <th>Documentos</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Nenhum registro encontrado.</td>
+                    </tr>
+                }
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">@item.DataCheckin.ToString("dd/MM/yyyy")</div>
+                            <small class="text-muted">@item.DataCheckin.ToString("HH:mm")</small>
+                        </td>
+
+                        <td class="fw-bold" style="color: #00d1ff;">
+                            @item.Matricula
+                        </td>
+                    
+                        <td>
+                            <div class="fw-bold">@item.Nome</div>
+                            <small class="text-muted">@item.Email</small>
+                        </td>
+                    
+                        <td>
+                            <div>@item.Empresa</div>
+                            <small class="text-muted">@item.Funcao</small>
+                        </td>
+                    
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                @if (!string.IsNullOrEmpty(item.CaminhoCNH))
+                                {
+                                    <a href="@item.CaminhoCNH" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3" style="font-size: 0.75rem;">
+                                        <i class="bi bi-file-earmark-person"></i> CNH
+                                    </a>
+                                }
+                                @if (!string.IsNullOrEmpty(item.CaminhoCursoDefensiva))
+                                {
+                                    <a href="@item.CaminhoCursoDefensiva" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3" style="font-size: 0.75rem;">
+                                        <i class="bi bi-shield-check"></i> CURSO
+                                    </a>
+                                }
+                            </div>
+                        </td>
+
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                @if (UsuarioTemPermissao("btn_editar"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                }
+
+                                @if (UsuarioTemPermissao("btn_visualizar"))
+                                {
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Detalhes">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                }
+
+                                @if (UsuarioTemPermissao("btn_excluir"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+﻿@model CheckinLog.Models.Usuario
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body p-5">
+                    <h4 class="fw-bold mb-4 text-center" style="color: #2d3a4b;">
+                        <i class="bi bi-shield-lock me-2"></i>MEU PERFIL / SEGURANÇA
+                    </h4>
+
+                    <form asp-action="SavePerfil" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase">Nome de Usuário</label>
+                            <!-- Bloqueado: Usuário comum não muda seu login -->
+                            <input asp-for="NomeUsuario" class="form-control bg-light" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase">Nível de Acesso Atual</label>
+                            <!-- Bloqueado: Usuário comum não promove a si mesmo -->
+                            <input type="text" class="form-control bg-light" value="Nível @Model.NivelAcesso" readonly />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase" style="color: #00FFEE;">Nova Senha</label>
+                            <input name="novaSenha" type="password" class="form-control"
+                                   placeholder="Digite sua nova senha" style="height: 50px; border-radius: 10px; border: 2px solid #2DFF73;" required />
+                            <div class="form-text">Use uma senha forte em caso de suspeita de acesso indevido.</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-bold text-uppercase"
+                                    style="height: 50px; border-radius: 10px; background: linear-gradient(90deg, #2DFF73 0%, #00FFEE 100%); border: none; color: #2d3a4b;">
+                                ATUALIZAR MINHA SENHA
+                            </button>
+                            <a asp-action="Index" class="btn btn-link text-muted mt-2">Voltar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

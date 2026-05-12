@@ -1,0 +1,340 @@
+﻿@using CheckinLog.Extensions
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CheckinLog</title>
+
+    <script>
+            // Aplica o tema imediatamente para evitar o "flash" branco
+            (function () {
+                const temaSalvo = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-bs-theme', temaSalvo);
+            })();
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.2/lux/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+    :root {
+        /* Cores ISV / EDP */
+        --edp-dark: #2d3a4b;
+        --edp-green: #3cfb3c;
+        --edp-cyan: #00e5ff;
+        --edp-gradient: linear-gradient(135deg, #3cfb3c 0%, #00e5ff 100%);
+        
+        /* Variáveis Dinâmicas - MODO CLARO (Padrão) */
+        --title-color: #2d3a4b;
+        --text-main: #2d3a4b;
+        --text-muted: #6c757d;
+        --card-bg: #ffffff;
+        --input-bg: #ffffff;
+        --input-border: #ced4da;
+    }
+
+    /* --- MODO ESCURO (Sobrescreve as variáveis dinâmicas) --- */
+    [data-bs-theme='dark'] {
+        --title-color: #ffffff;
+        --text-main: #f8f9fa;
+        --text-muted: rgba(255, 255, 255, 0.7);
+        --bs-tertiary-bg: #1e1e1e; /* Corrige o fundo do main-card */
+        --card-bg: #1e1e1e;        /* Usado na tabela */
+        --input-bg: #2b2b2b;
+        --input-border: #444444;
+    }
+
+    /* --- ESTRUTURA GLOBAL --- */
+    body {
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        font-family: 'Inter', sans-serif;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* FORÇAR TEXTOS E TÍTULOS A RESPEITAREM O TEMA */
+    h1, h2, h3, h4, h5, .text-navy {
+        color: var(--title-color) !important;
+    }
+
+    label {
+        color: var(--text-main) !important;
+        font-weight: 500;
+    }
+
+    .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* Inversão do logo no modo escuro */
+    [data-bs-theme='dark'] .navbar-brand img,
+    [data-bs-theme='dark'] .logo-custom {
+        filter: invert(1) brightness(2);
+    }
+
+    /* CARDS PRINCIPAIS */
+    .main-card {
+        background: var(--bs-tertiary-bg);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: background-color 0.3s ease;
+    }
+
+    /* --- ESTILO DOS INPUTS GERAL (Evita sumiço na Edição e Filtros) --- */
+    .form-control, .form-select, .form-control-custom {
+        background-color: var(--input-bg) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--input-border) !important;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.6;
+    }
+
+    /* Correção para o ícone de calendário no modo escuro */
+    [data-bs-theme='dark'] input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+
+    /* CONTAINER DE FILTROS (image_23c49f.png) */
+    .filters-container {
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    [data-bs-theme='dark'] .filters-container {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-color: #333 !important;
+    }
+
+    /* --- NAVBAR --- */
+    .navbar {
+        background-color: var(--bs-body-bg) !important;
+        padding: 0.8rem 0;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border-bottom: 4px solid transparent;
+        border-image: var(--edp-gradient) 1;
+    }
+
+    .nav-link {
+        color: var(--bs-body-color) !important;
+        font-weight: 600;
+        opacity: 0.7;
+        font-size: 0.8rem;
+    }
+
+    [data-bs-theme='dark'] .dropdown-menu {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+    }
+
+    /* --- BOTÕES ISV (Padronização) --- */
+    .btn-isv-gradient {
+        background: var(--edp-gradient) !important;
+        color: #000000 !important;
+        border: none !important;
+        border-radius: 12px;
+        font-weight: bold;
+        transition: transform 0.2s;
+    }
+
+    .btn-isv-gradient:hover {
+        transform: scale(1.02);
+        opacity: 0.9;
+    }
+
+    .btn-isv-outline {
+        border: 1px solid var(--edp-dark);
+        color: var(--edp-dark);
+        border-radius: 12px;
+        background: transparent;
+    }
+
+    [data-bs-theme='dark'] .btn-isv-outline {
+        border-color: #555;
+        color: #fff;
+    }
+
+    /* --- TABELA FLUTUANTE MODERNA --- */
+    .table-custom {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        margin-top: 1rem;
+    }
+
+    .table-custom thead th {
+        background-color: transparent;
+        color: var(--text-muted) !important;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        padding: 12px 20px;
+        border: none;
+    }
+
+    .table-custom tbody tr {
+        background-color: var(--card-bg) !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+    }
+
+    .table-custom tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .table-custom tbody td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border: none;
+        color: var(--text-main) !important;
+    }
+
+    /* Arredondar cantos das linhas da tabela */
+    .table-custom tbody tr td:first-child { border-radius: 12px 0 0 12px; }
+    .table-custom tbody tr td:last-child { border-radius: 0 12px 12px 0; }
+
+    [data-bs-theme='dark'] .table-custom tbody tr {
+        background-color: #252525 !important; /* Soft Dark nas linhas */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    [data-bs-theme='dark'] .table-custom tbody tr:hover {
+        background-color: #2b2b2b !important;
+    }
+
+    /* --- RODAPÉ INTELIGENTE --- */
+    footer {
+        margin-top: auto;
+        padding: 2rem 0;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        border-top: 1px solid rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+    }
+
+    [data-bs-theme='dark'] footer {
+        background-color: #1a1a1a !important;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    footer .text-navy {
+        color: var(--title-color) !important;
+    }
+</style>
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/logo.jpg" asp-append-version="true" alt="Logo" style="height: 40px; width: auto;" class="me-2">
+                    <span style="border-left: 2px solid #dee2e6; padding-left: 15px; margin-left: 5px; font-weight: 800;">
+                        checkinlog
+                    </span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                    <ul class="navbar-nav">
+        
+                        @if (User.HasPermission("menu_listagem_checkin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-uppercase" asp-controller="Checkins" asp-action="Index">Listagem de Check-in</a>
+                            </li>
+                        }
+        
+                        @if (User.HasPermission("menu_usuarios"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-uppercase" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                                    Usuários
+                                </a>
+                                <ul class="dropdown-menu shadow" aria-labelledby="userMenu">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Usuarios" asp-action="Index">
+                                            <i class="bi bi-person-gear me-2"></i> Gestão de Usuários
+                                        </a>
+                                    </li>
+                    
+                                     @if (User.HasPermission("menu_ajustes_perfis"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Ajustes" asp-action="Index">
+                                                <i class="bi bi-shield-lock me-2"></i> Categorias de Acesso
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
+                        @if (User.HasPermission("menu_configuracoes"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-uppercase" asp-controller="Configuracoes" asp-action="Index">Ajustes</a>
+                            </li>
+                        }
+
+                        <li class="nav-item ms-lg-3">
+                            <a class="nav-link text-uppercase text-danger" asp-area="Identity" asp-page="/Account/Logout">
+                                <i class="bi bi-box-arrow-right"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="main-card">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <footer class="border-top footer text-muted bg-white mt-auto">
+        <div class="container">
+            <div class="row py-3 align-items-center">
+                <!-- Lado Esquerdo: Copyright -->
+                <div class="col-md-6 text-center text-md-start small">
+                    &copy; @DateTime.Now.Year - <span class="fw-bold text-navy">ConectaTech</span>
+                    <span class="mx-2">|</span> Todos os direitos reservados.
+                </div>
+
+                <!-- Lado Direito: Versão ou Status -->
+                <div class="col-md-6 text-center text-md-end small">
+                    <span class="badge rounded-pill bg-light text-dark border">Versão 1.0.4</span>
+                    <span class="ms-2">Desenvolvido por <a href="#" class="text-decoration-none text-navy fw-bold">Ivan Sousa/ConectaTech</a></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

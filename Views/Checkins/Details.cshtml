@@ -1,0 +1,78 @@
+﻿@model CheckinLog.Models.Checkin
+
+@{
+    ViewData["Title"] = "Detalhes do Check-in";
+}
+
+<div class="main-card shadow-sm p-4 mx-auto" style="max-width: 850px;">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h2 class="fw-bold text-navy mb-0">Ficha do Colaborador</h2>
+        <span class="badge bg-light text-primary border rounded-pill px-3">ID #@Model.Id</span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="text-muted small fw-bold d-block">NOME</label>
+            <p class="fs-5 fw-bold mb-0">@Model.Nome</p>
+        </div>
+        <div class="col-md-6">
+            <label class="text-muted small fw-bold d-block">MATRÍCULA</label>
+            <p class="fs-5 text-primary fw-bold mb-0">@Model.Matricula</p>
+        </div>
+        <div class="col-md-6">
+            <label class="text-muted small fw-bold d-block">EMPRESA</label>
+            <p class="mb-0">@Model.Empresa</p>
+        </div>
+        <div class="col-md-6">
+            <label class="text-muted small fw-bold d-block">FUNÇÃO</label>
+            <p class="mb-0">@Model.Funcao</p>
+        </div>
+        <div class="col-md-6">
+            <label class="text-muted small fw-bold d-block">E-MAIL</label>
+            <p class="mb-0">@(string.IsNullOrEmpty(Model.Email) ? "Não informado" : Model.Email)</p>
+        </div>
+        <div class="col-md-6">
+            <label class="text-muted small fw-bold d-block">DATA DE REGISTRO</label>
+            <p class="mb-0">@Model.DataCheckin.ToString("dd/MM/yyyy HH:mm:ss")</p>
+        </div>
+
+        @* Seção de Anexos *@
+        <div class="col-12 mt-3">
+            <label class="text-muted small fw-bold d-block mb-2">DOCUMENTOS ANEXADOS</label>
+            <div class="d-flex gap-2">
+                @if (!string.IsNullOrEmpty(Model.CaminhoCNH))
+                {
+                    <a href="@Model.CaminhoCNH" target="_blank" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-file-earmark-check"></i> Ver CNH
+                    </a>
+                }
+                else
+                {
+                    <span class="badge bg-light text-muted border px-3 py-2">CNH não enviada</span>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.CaminhoCursoDefensiva))
+                {
+                    <a href="@Model.CaminhoCursoDefensiva" target="_blank" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-file-earmark-check"></i> Ver Curso Defensiva
+                    </a>
+                }
+                else
+                {
+                    <span class="badge bg-light text-muted border px-3 py-2">Curso não enviado</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 d-flex gap-2 border-top pt-4">
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary px-4 shadow-sm">Editar Registro</a>
+        <a asp-action="Index" class="btn btn-light border px-4">Voltar para a Lista</a>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
