@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using CheckinLog.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Net; // Necessário para SecurityProtocol
 
 namespace CheckinLog
 {
@@ -8,13 +9,23 @@ namespace CheckinLog
     {
         public static void Main(string[] args)
         {
+            // AJUSTE 1: Força o uso de protocolos de segurança modernos antes de iniciar o builder
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Configuração do Banco de Dados (AJUSTADO PARA POSTGRESQL)
+            // 1. Configuração do Banco de Dados (COM RESILIÊNCIA)
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
+                {
+                    // AJUSTE 2: Tenta reconectar automaticamente se a conexão "piscar" (muito comum em nuvem)
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorCodesToAdd: null);
+                }));
 
-            // --- CONFIGURAÇÃO DE SESSÃO (PARTE 1) ---
+            // --- CONFIGURAÇÃO DE SESSÃO ---
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -22,7 +33,6 @@ namespace CheckinLog
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            // ----------------------------------------------
 
             // 2. Configuração de Autenticação
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -36,9 +46,7 @@ namespace CheckinLog
 
             var app = builder.Build();
 
-            // --- NOVO: APLICAR MIGRAÇÕES AUTOMATICAMENTE ---
-            // Isso cria as tabelas no banco do Render assim que o site sobe
-            // --- NOVO: APLICAR MIGRAÇÕES COM TRATAMENTO DE ERRO E SSL ---
+            // --- BLOCO DE MIGRAÇÃO COM TRATAMENTO DE ERRO E SSL ---
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -46,10 +54,11 @@ namespace CheckinLog
                 {
                     var db = services.GetRequiredService<ApplicationDbContext>();
 
-                    // Tenta forçar a validação do certificado via código caso a string falhe
+                    // AJUSTE 3: Garante que o driver Npgsql aceite o certificado do Render
                     var conn = db.Database.GetDbConnection() as Npgsql.NpgsqlConnection;
                     if (conn != null)
                     {
+                        // Se a conexão estiver fechada, abrimos manualmente para injetar o callback de SSL
                         conn.UserCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
                     }
 
@@ -59,18 +68,13 @@ namespace CheckinLog
                 }
                 catch (Exception ex)
                 {
-                    // Isso impede o erro 139 (crash) e mostra o motivo real no log
                     Console.WriteLine("###################################################");
                     Console.WriteLine("ERRO AO MIGRAR BANCO:");
                     Console.WriteLine(ex.Message);
                     if (ex.InnerException != null) Console.WriteLine($"DETALHE: {ex.InnerException.Message}");
                     Console.WriteLine("###################################################");
-
-                    // O app continuará tentando subir mesmo se a migração falhar aqui
                 }
             }
-            // ---------------------------------------------------------------
-            // -----------------------------------------------
 
             if (!app.Environment.IsDevelopment())
             {
