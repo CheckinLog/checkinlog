@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11806.211 stable
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckinLog", "CheckinLog.csproj", "{F2304E11-2B3A-D7E1-C53F-52B025EFF970}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2304E11-2B3A-D7E1-C53F-52B025EFF970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2304E11-2B3A-D7E1-C53F-52B025EFF970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2304E11-2B3A-D7E1-C53F-52B025EFF970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2304E11-2B3A-D7E1-C53F-52B025EFF970}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D6C2D8BE-43AF-423F-BF35-0A3F9FBE0104}
+	EndGlobalSection
+EndGlobal
