@@ -38,11 +38,38 @@ namespace CheckinLog
 
             // --- NOVO: APLICAR MIGRAÇÕES AUTOMATICAMENTE ---
             // Isso cria as tabelas no banco do Render assim que o site sobe
+            // --- NOVO: APLICAR MIGRAÇÕES COM TRATAMENTO DE ERRO E SSL ---
             using (var scope = app.Services.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.Migrate();
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var db = services.GetRequiredService<ApplicationDbContext>();
+
+                    // Tenta forçar a validação do certificado via código caso a string falhe
+                    var conn = db.Database.GetDbConnection() as Npgsql.NpgsqlConnection;
+                    if (conn != null)
+                    {
+                        conn.UserCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                    }
+
+                    Console.WriteLine("==> Tentando aplicar migrações no banco de dados...");
+                    db.Database.Migrate();
+                    Console.WriteLine("==> Migrações aplicadas com sucesso!");
+                }
+                catch (Exception ex)
+                {
+                    // Isso impede o erro 139 (crash) e mostra o motivo real no log
+                    Console.WriteLine("###################################################");
+                    Console.WriteLine("ERRO AO MIGRAR BANCO:");
+                    Console.WriteLine(ex.Message);
+                    if (ex.InnerException != null) Console.WriteLine($"DETALHE: {ex.InnerException.Message}");
+                    Console.WriteLine("###################################################");
+
+                    // O app continuará tentando subir mesmo se a migração falhar aqui
+                }
             }
+            // ---------------------------------------------------------------
             // -----------------------------------------------
 
             if (!app.Environment.IsDevelopment())
