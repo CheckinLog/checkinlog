@@ -10,18 +10,17 @@ namespace CheckinLog
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Configuração do Banco de Dados
+            // 1. Configuração do Banco de Dados (AJUSTADO PARA POSTGRESQL)
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // --- NOVO: CONFIGURAÇÃO DE SESSÃO (PARTE 1) ---
-            // A sessão precisa de um cache para armazenar os dados
+            // --- CONFIGURAÇÃO DE SESSÃO (PARTE 1) ---
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(30); // Tempo que a sessão fica ativa
-                options.Cookie.HttpOnly = true; // Segurança: impede acesso via JS
-                options.Cookie.IsEssential = true; // Essencial para o app funcionar
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
             });
             // ----------------------------------------------
 
@@ -37,6 +36,15 @@ namespace CheckinLog
 
             var app = builder.Build();
 
+            // --- NOVO: APLICAR MIGRAÇÕES AUTOMATICAMENTE ---
+            // Isso cria as tabelas no banco do Render assim que o site sobe
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                db.Database.Migrate();
+            }
+            // -----------------------------------------------
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -47,10 +55,7 @@ namespace CheckinLog
             app.UseStaticFiles();
             app.UseRouting();
 
-            // --- NOVO: ATIVAR SESSÃO (PARTE 2) ---
-            // IMPORTANTE: Deve vir depois de UseRouting e antes de UseAuthorization
             app.UseSession();
-            // ------------------------------------
 
             app.UseAuthentication();
             app.UseAuthorization();
